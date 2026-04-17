@@ -4,7 +4,11 @@ from supabase import create_client, Client
 from datetime import date, datetime, timezone
 from typing import Optional
 import os
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+INDEX_PATH = os.path.join(BASE_DIR, "index.html")
 
 app = FastAPI(title="President API")
 
@@ -64,13 +68,10 @@ class PresidentUpdate(BaseModel):
     birthdate: Optional[date] = None
 
 
-@app.get("/")
-async def root():
-    response = supabase.table("president").select("*", count="exact").execute()
-    return {
-        "message": "President API is running",
-        "president_count": response.count,
-    }
+@app.get("/", response_class=HTMLResponse)
+def serve_index():
+    with open(INDEX_PATH, "r", encoding="utf-8") as f:
+        return f.read()
 
 
 @app.get("/presidents")
