@@ -5,8 +5,12 @@ from datetime import date, datetime, timezone
 from typing import Optional
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="President API")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+INDEX_PATH = os.path.join(BASE_DIR, "index.html")
 
 app.add_middleware(
     CORSMiddleware,
@@ -53,7 +57,14 @@ class PresidentUpdate(BaseModel):
     birthdate: Optional[date] = None
 
 
-@app.get("/")
+
+@app.get("/", response_class=HTMLResponse)
+def serve_index():
+    with open(INDEX_PATH, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+@app.get("/api")
 async def root():
     response = supabase.table("president").select("*", count="exact").execute()
     return {
